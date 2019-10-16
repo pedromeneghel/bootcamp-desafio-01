@@ -1,14 +1,22 @@
 const express = require('express');
 const server = express();
 const projects = [];
+let count = 0;
 
 // Habilitando suporte a json no body da requisição
 server.use(express.json())
 
 //Middlewares
+server.use((req, res, next) => {
+  count++;
+
+  console.log(`Total transactions: ${count}`);
+  return next()
+})
 
 function checkIdProjectInArray (req, res, next) {
-  const index = projects.findIndex(obj => obj.id == req.params.id);
+  const { id } = req.params;
+  const index = projects.findIndex(obj => obj.id == id);
   
   if(index === -1) {
     return res.status(400).json({
@@ -43,19 +51,26 @@ server.post('/projects', (req, res) => {
 });
 
 server.post('/projects/:id/tasks', checkIdProjectInArray, (req, res) => {
-  projects[req.index].tasks.push(req.body.title);
+  const { title } = req.body;
+  const { index } = req;
+  projects[index].tasks.push(title);
 
-  return res.json(projects[req.index]);
+  return res.json(projects[index]);
 });
 
 server.put('/projects/:id', checkIdProjectInArray, (req, res) => {
-  projects[req.index].title = req.body.title;
+  const { title } = req. body;
+  const { index } = req;
 
-  return res.json(projects[req.index]);
+  projects[index].title = title;
+
+  return res.json(projects[index]);
 })
 
 server.delete('/projects/:id', checkIdProjectInArray, (req, res) => {
-  projects.splice(req.index, 1);
+  const { index } = req;
+
+  projects.splice(index, 1);
 
   return res.send();
 });
